@@ -1,8 +1,16 @@
 #include<bits/stdc++.h>
 using namespace std ;
-#define ll long long int 
-const int INF = 1000000000;
+#define ll long long int
 #define pii pair<int,int>
+#define vi vector<int>
+#define vll vector<ll>
+#define pb push_back
+#define all(x) x.begin(), x.end()
+#define F first
+#define S second
+#define vvi vector<vi>
+const int INF = 1e9;
+const ll LINF = 1e18;
 
 void dijkstra(int s, vector<int> & d, vector<int> & p, vector<vector<pair<int, int>>>& adj) {
     //s-> source, d -> distance
