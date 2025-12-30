@@ -1,13 +1,25 @@
 #include<bits/stdc++.h>
 using namespace std ;
 
+#define ll long long int
+#define pii pair<int,int>
+#define vi vector<int>
+#define vll vector<ll>
+#define pb push_back
+#define all(x) x.begin(), x.end()
+#define F first
+#define S second
+#define vvi vector<vi>
+const int INF = 1e9;
+const ll LINF = 1e18;
+
 struct Edge {
     int a, b, cost;
 };
 
 
 vector<Edge> edges;
-const int INF = 1000000000;
+
 
 
 void bellmanFord(int n, int v, vector<int>& ans)
