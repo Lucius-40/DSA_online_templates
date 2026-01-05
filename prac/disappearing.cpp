@@ -9,11 +9,13 @@ using namespace std ;
 #define F first
 #define S second
 #define vvi vector<vi>
-#define vvpii vector<vector<pii>>
 const int INF = 1e9;
 const ll LINF = 1e18;
 
-void dijkstra(int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
+
+class Solution {
+    
+    void dijkstra(int s, vector<int> & d, vector<int> & p, vector<vector<pair<int, int>>>& adj, vector<int>& disappear) {
     //s-> source, d -> distance
     //p -> predecessor
     // adjancency list is stored like:
@@ -39,7 +41,7 @@ void dijkstra(int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
             int to = edge.first;
             int len = edge.second;
 
-            if (d[v] + len < d[to]) {
+            if (d[v] + len < d[to] and d[v] + len < disappear[to] ) {
                 d[to] = d[v] + len;
                 p[to] = v;
                 pq.push({d[to], to});
@@ -47,10 +49,21 @@ void dijkstra(int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
         }
     }
 }
+    public:
+    vector<int> minimumTime(int n, vector<vector<int>>& edges, vector<int>& disappear) {
+        vector<vector<pii>> adj(n);
+        for(int i = 0 ; i < edges.size(); i++){
+            adj[edges[i][0]].pb({edges[i][1],edges[i][2]});
+            adj[edges[i][1]].pb({edges[i][0],edges[i][2]});
+        }
+        vi d(n), p(n);
 
-int main(){
-    int n , m ;
-    cin >> n >> m ;
-    vvpii adj(n);
-    vi d(n), p(n);
-}
+        dijkstra(0,d,p,adj,disappear);
+        for(int i = 0 ; i< d.size(); i++){
+            if(d[i] == INF){
+                d[i] = -1 ;
+            }
+        }
+        return d ;
+    }
+};

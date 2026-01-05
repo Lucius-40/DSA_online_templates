@@ -1,20 +1,31 @@
 #include<bits/stdc++.h>
 using namespace std ;
-unordered_map<int, vector<int>> graph_map; // graph represented as an adjacency list
-vector<vector<int>> graph_vec ;
+#define ll long long int
+#define pii pair<int,int>
+#define vi vector<int>
+#define vll vector<ll>
+#define pb push_back
+#define all(x) x.begin(), x.end()
+#define F first
+#define S second
+#define vvi vector<vi>
+const int INF = 1e9;
+const ll LINF = 1e18;
+
+vvi graph_vec ;
 int n; // number of vertices
 
-vector<int> color;
+vi color;
 
-vector<int> time_in, time_out;
+
 int dfs_timer = 0;
 
 void dfs(int v) {
-    time_in[v] = dfs_timer++;
+   
     color[v] = 1;
     for (int u : graph_vec[v])
         if (color[u] == 0)
             dfs(u);
     color[v] = 2;
-    time_out[v] = dfs_timer++;
+    
 }

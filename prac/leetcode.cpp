@@ -1,5 +1,7 @@
 #include<bits/stdc++.h>
 using namespace std ;
+
+
 #define ll long long int
 #define pii pair<int,int>
 #define vi vector<int>
@@ -9,11 +11,15 @@ using namespace std ;
 #define F first
 #define S second
 #define vvi vector<vi>
-#define vvpii vector<vector<pii>>
+#define vvpii vector<vector<pair<int, int>>>
 const int INF = 1e9;
 const ll LINF = 1e18;
 
-void dijkstra(int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
+
+
+class Solution {
+    const int m = 1e9 + 7 ;
+   int dijkstra(int s, vector<int> & d, vector<int> & p, vvpii& adj) {
     //s-> source, d -> distance
     //p -> predecessor
     // adjancency list is stored like:
@@ -21,8 +27,10 @@ void dijkstra(int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
     int n = adj.size();
     d.assign(n, INF);
     p.assign(n, -1);
+    vi ways(n,0);
+    ways[0] = 1 ;
 
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // creeates min priority queue of pairs 
+    priority_queue<pii, vector<pii>, greater<pii>> pq; // creeates min priority queue of pairs 
     // pairs are in the form : {distance, vertex}
     d[s] = 0;
     pq.push({0, s});
@@ -44,13 +52,27 @@ void dijkstra(int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
                 p[to] = v;
                 pq.push({d[to], to});
             }
+            if(d[v] < d[to]){
+                ways[to] += ways[v];
+            }
         }
     }
+    return ways[n-1];
 }
 
-int main(){
-    int n , m ;
-    cin >> n >> m ;
-    vvpii adj(n);
-    vi d(n), p(n);
-}
+
+vi d ;
+
+public:
+    int countRestrictedPaths(int n, vector<vector<int>>& edges) {
+        vvpii adj(n);
+        for(int i = 0 ; i < edges.size(); i++){
+            adj[edges[i][0]-1].pb({edges[i][1]-1, edges[i][2] });
+            adj[edges[i][1]-1].pb({edges[i][0]-1, edges[i][2] });
+        }
+        vi  p(n);
+        d.assign(n, INF);
+        return  dijkstra(0, d, p , adj);
+
+    }
+};
