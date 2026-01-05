@@ -1,6 +1,5 @@
 #include<bits/stdc++.h>
-using namespace std;
-
+using namespace std ;
 #define ll long long int
 #define pii pair<int,int>
 #define vi vector<int>
@@ -10,36 +9,49 @@ using namespace std;
 #define F first
 #define S second
 #define vvi vector<vi>
+#define vvpii vector<vector<pii>>
 const int INF = 1e9;
 const ll LINF = 1e18;
 
-bool comp(pii a , pii b ){
-    return a.S < b.S ;
+vector<int> restore_path(int s, int t, vector<int> const& p) {
+    vector<int> path;
+
+    for (int v = t; v != s; v = p[v])
+        path.push_back(v);
+    path.push_back(s);
+
+    reverse(path.begin(), path.end());
+    return path;
 }
 
-// Dijkstra's Algorithm - Single Source Shortest Path (O((V+E)logV))
-// Works for graphs with NON-NEGATIVE edge weights only
-vector<pii> dijkstra(int s, vector<int>& d, vector<int>& p, vector<vector<pair<int, int>>>& adj) {
-    // s -> source vertex
-    // d -> distance array (output)
-    // p -> predecessor array (output) - for path reconstruction
-    // adj -> adjacency list: adj[u] = {{v, w}, ...} means edge u->v with weight w
-    
+void dijkstra(int k , int dest,int s, vi & d, vi & p, vector<vector<pair<int, int>>>& adj) {
+    //s-> source, d -> distance
+    //p -> predecessor
+    // adjancency list is stored like:
+    // adj[u] == {v,w} ; there is an edge (u,v) of weight w
     int n = adj.size();
     d.assign(n, INF);
     p.assign(n, -1);
-    
-    priority_queue<pii, vector<pii>, greater<pii>> pq; // min-heap: {dist, vertex}
+
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // creeates min priority queue of pairs 
+    // pairs are in the form : {distance, vertex}
     d[s] = 0;
     pq.push({0, s});
     
     while (!pq.empty()) {
-        auto [dist, v] = pq.top();
+        int dist = pq.top().first;
+        int v = pq.top().second;
         pq.pop();
         
-        if (dist > d[v]) continue; // already processed with better distance
+        if (dist > d[v])
+            continue;
         
-        for (auto [to, len] : adj[v]) {
+        for (auto edge : adj[v]) {
+            int to = edge.first;
+            int len = edge.second;
+            int extra = (v == s)? 0 : k ;
+            len += extra ;
+
             if (d[v] + len < d[to]) {
                 d[to] = d[v] + len;
                 p[to] = v;
@@ -47,56 +59,25 @@ vector<pii> dijkstra(int s, vector<int>& d, vector<int>& p, vector<vector<pair<i
             }
         }
     }
-    vector<pii> node_dist_pair ;
-
-    for(int i = 0 ; i < d.size(); i++){
-        node_dist_pair.pb({i, d[i]});
-    }
-    sort(node_dist_pair.begin(), node_dist_pair.end(), comp);
-    return node_dist_pair ;
+    vi path = restore_path(s,dest,p);
+    for(int x : path) cout << x+1 << "-> ";
+    cout << d[dest]; 
+    
 }
 
-
-
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    freopen("inputA.txt", "r", stdin);
-    //freopen("outputA.txt", "w", stdout);
-    
-    int n, m, fee; // n = vertices, m = edges
-    cin >> n >> m>> fee;
-    vi capacity(n) ;
-    for(int i = 0 ; i < n ; i++){
-         cin >> capacity[i];
-    }
-    int stu ;
-    
+int main(){
+    int k ,n , m ;
+    cin >> k >> n >> m ;
+    vvpii adj(n);
     vi d(n), p(n);
-    vector<vector<pii>> adj(n);
-    
-    for(int i = 0 ; i < m ; i++){
-        int a ,b ,c ;
-        cin >> a >> b >> c ;
-        a-- ;
-        b-- ;
-        adj[a].pb({b, c});
-        adj[b].pb({a,c});
+    for(int i = 0 ; i < m ;i++){
+        int a , b , c ,d ;
+        cin >> a >> b >> c >> d ;
+        a-- ; b-- ;
+        adj[a].pb({b, d + (k*c)});
+        adj[b].pb({a, d + (k*c)});
     }
-    cin >> stu ;
-    vector<pii> labs = dijkstra(0, d, p , adj);
-    int lab = 0 ;
-    for(int i = 0 ; i < stu ; i++){
-        while(lab < n and capacity[labs[lab].F] <= 0){
-            lab ++ ;
-        }
-        if(lab >= n){
-            cout << -1 <<' ';
-        }
-        else {
-            cout << labs[lab].S + fee << endl;
-            capacity[labs[lab].F]--;
-        }
-    }
-
+    int s ,dest ;
+    cin >>s >> dest ;
+    dijkstra(k, dest-1,s-1,d,p,adj);
 }
