@@ -81,3 +81,4 @@ int main(){
     cin >>s >> dest ;
     dijkstra(k, dest-1,s-1,d,p,adj);
 }
+
