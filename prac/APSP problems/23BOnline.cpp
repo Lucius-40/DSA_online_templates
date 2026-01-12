@@ -30,29 +30,53 @@ vector<int> getPath(int start, int end, vector<vector<int>>& parent) {
 }
 
 int main() {
-    int n = 4;  // number of vertices
-    
-    // Initialize distance matrix
+    int n , m;  // number of vertices
+    cin >> n >> m ;
     vector<vector<int>> dist(n, vector<int>(n, INF));
-    vector<vector<int>> parent(n, vector<int>(n, -1));
+    //vector<vector<int>> parent(n, vector<int>(n, -1));
 
-    
+    // make graph
+    for(int  i = 0 ; i < m ; i++){
+        int a , b, c ;
+        cin >> a >> b >> c ;
+        //a-- ; b-- ;
+        dist[a][b]=c ;
+    }
 
-    
 
-    
-    // Floyd-Warshall algorithm with parent tracking
+    int x,y ;
+    cin >> x>> y ;
+    //x-- ; y-- ;
+    // Initialize distance matrix
+
+    for(int i = 0 ; i < n ; i++){
+        dist[i][i]=0 ;
+    }
+
+    //floyd-warshall
     for(int k = 0; k < n; k++) {
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
                 if(dist[i][k] != INF && dist[k][j] != INF) {
                     if(dist[i][j] > dist[i][k] + dist[k][j]) {
                         dist[i][j] = dist[i][k] + dist[k][j];
-                        parent[i][j] = parent[k][j];
+                        // parent[i][j] = parent[k][j];
                     }
                 }
             }
         }
+    }
+
+    //queries
+    int q ;
+    cin >> q ;
+    for(int i = 0 ; i < q ; i++){
+        int source, dest ;
+        cin >> source >> dest ;
+        //source -- , dest -- ;
+        int candidate1 = dist[source][x]+  dist[x][dest];
+        int candidate2 = dist[source][y]+ dist[y][dest];
+        cout << min(candidate1, candidate2)<<endl ;
     }
     
     

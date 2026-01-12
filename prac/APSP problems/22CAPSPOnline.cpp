@@ -13,6 +13,8 @@ using namespace std;
 const int INF = 1e9;
 const ll LINF = 1e18;
 
+
+
 // Function to reconstruct shortest path between two vertices
 vector<int> getPath(int start, int end, vector<vector<int>>& parent) {
     if(parent[start][end] == -1) {
@@ -30,28 +32,33 @@ vector<int> getPath(int start, int end, vector<vector<int>>& parent) {
 }
 
 int main() {
-    int n , m;  // number of vertices
-    cin >> n >> m ;
+    int n , m, k;  // number of vertices
+    cin >> n >> m>> k ;
     vector<vector<int>> dist(n, vector<int>(n, INF));
+
+    for(int i = 0 ; i < n ; i++){
+        dist[i][i]=0 ;
+    }
+
+
+    vi capacity(n,0);
+    for(int i = 0 ; i < n ; i++){
+        cin >> capacity[i];
+    }
     //vector<vector<int>> parent(n, vector<int>(n, -1));
 
     // make graph
     for(int  i = 0 ; i < m ; i++){
         int a , b, c ;
         cin >> a >> b >> c ;
-        //a-- ; b-- ;
-        dist[a][b]=c ;
+        a-- ; b-- ;
+        if(capacity[a]==-1 or capacity[b]==-1)continue;
+        dist[a][b]= dist[b][a]= c ;
     }
 
 
-    // int x,y ;
-    // cin >> x>> y ;
-    //x-- ; y-- ;
-    // Initialize distance matrix
 
-    for(int i = 0 ; i < n ; i++){
-        dist[i][i]=0 ;
-    }
+    
 
     //floyd-warshall
     for(int k = 0; k < n; k++) {
@@ -68,16 +75,36 @@ int main() {
     }
 
     //queries
-    // int q ;
-    // cin >> q ;
-    // for(int i = 0 ; i < q ; i++){
-    //     int source, dest ;
-    //     cin >> source >> dest ;
-    //     //source -- , dest -- ;
-    //     int candidate1 = dist[source][x]+  dist[x][dest];
-    //     int candidate2 = dist[source][y]+ dist[y][dest];
-    //     cout << min(candidate1, candidate2)<<endl ;
-    // }
+    int q ;
+    cin >> q ;
+    for(int i = 0 ; i < q ; i++){
+        vi cap = capacity ;
+        int source ;
+        cin >> source ;
+        source -- ;
+        for(int j=0 ; j < k ; j++){
+            int candidate = INF ;
+            int selectedLab = -1;
+            
+            // Find the closest lab with available capacity
+            for(int p = 0 ; p < n ; p++){
+                if(cap[p] > 0 && dist[source][p] < candidate){
+                    candidate = dist[source][p];
+                    selectedLab = p;
+                }
+            }
+            
+            // Reduce capacity of selected lab
+            if(selectedLab != -1){
+                cap[selectedLab]--;
+            } else {
+                candidate = -1;
+            }
+            
+            cout << candidate << " ";
+        }
+        cout << endl ;
+    }
     
     
     
