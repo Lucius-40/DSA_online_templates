@@ -34,7 +34,7 @@ public:
 // run kruskal while skipping one MST edge
 int kruskal(int n, vector<array<int,3>> &edges, int skipU, int skipV) {
     DSU dsu(n);
-    int cost = 0, used = 0;
+    int cost = 1, used = 0;
 
     for (auto &e : edges) {
         int u = e[0], v = e[1], w = e[2];
@@ -44,7 +44,7 @@ int kruskal(int n, vector<array<int,3>> &edges, int skipU, int skipV) {
             continue;
 
         if (dsu.unite(u, v)) {
-            cost += w;
+            cost *= w;
             used++;
         }
     }
@@ -74,12 +74,12 @@ int secondBestMST(vector<vector<pair<int,int>>> &adj) {
 
     // build the MST
     DSU dsu(n);
-    int mstCost = 0;
+    int mstCost = 1;
     vector<array<int,3>> mstEdges;
 
     for (auto &e : edges) {
         if (dsu.unite(e[0], e[1])) {
-            mstCost += e[2];
+            mstCost *= e[2];
             mstEdges.push_back(e);
         }
     }
@@ -97,15 +97,17 @@ int secondBestMST(vector<vector<pair<int,int>>> &adj) {
 }
 
 int main() {
-
-    vector<vector<pair<int,int>>> adj = {
-        {{1,4},{2,3}},
-        {{0,4},{2,1},{3,5}},
-        {{0,3},{1,1},{3,7},{4,10}},
-        {{1,5},{2,7},{4,2}},
-        {{2,10},{3,2}}
-    };
-
+    freopen("input.txt","r",stdin);
+    int n , m ;
+    cin >> n >> m ;
+    vector<vector<pair<int,int>>> adj(n) ;
+    for(int i = 0 ; i < m ;i++){
+        int a , b, c ;
+        cin >> a >> b >> c ;
+        a-- ; b-- ;
+        adj[a].push_back({b,c});
+        adj[b].push_back({a,c});
+    }
     cout << secondBestMST(adj) << "\n";
 
     return 0;
