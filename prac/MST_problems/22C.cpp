@@ -84,7 +84,7 @@ int main(){
     cin.tie(nullptr);
     int N, M;
     ll P;
-    if (!(cin >> N >> M >> P)) return 0;
+    cin >> N >> M >> P;
     int K; cin >> K;
     vector<char> risky(N, 0);
     for (int i=0;i<K;++i){
