@@ -44,6 +44,8 @@ namespace DSU{
     }
 
     void init(int n){
+        set.clear();
+        rank.clear();
         set.resize(n);
         rank.resize(n);
         for(int i= 0 ; i < n ; i++)

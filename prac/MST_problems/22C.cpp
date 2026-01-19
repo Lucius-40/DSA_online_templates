@@ -1,10 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
-using ll = long long;
+
+#define ll long long int
+#define pii pair<int,int>
+#define vi vector<int>
+#define vll vector<ll>
+#define pb push_back
+#define all(x) x.begin(), x.end()
+#define F first
+#define S second
+
+const ll INF = 1e15;
 
 struct Edge {
-    int u, v;
-    ll w;
+    int u;
+    int v;
+    ll weight;
 };
 
 struct EffEdge {
@@ -13,29 +24,58 @@ struct EffEdge {
     ll orig;
 };
 
-struct DSU {
+class DSU {
+private:
+    vector<int> parent;
+    vector<int> rank;
     int n;
-    vector<int> p, sz;
+
+public:
     vector<int> safe_count;
-    DSU(int n=0): n(n), p(n), sz(n,1), safe_count(n,0) {
-        for (int i=0;i<n;++i) p[i]=i;
+    
+    // Constructor
+    DSU(int size) : n(size) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        safe_count.resize(n, 0);
+        for(int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
     }
-    void init(int n_) {
-        n = n_;
-        p.resize(n); sz.assign(n,1); safe_count.assign(n,0);
-        for (int i=0;i<n;++i) p[i]=i;
+
+    // Find with path compression
+    int find_set(int v) {
+        if (v == parent[v])
+            return v;
+        return parent[v] = find_set(parent[v]);
     }
-    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+
+    // Union by rank with safe_count tracking
     // returns tuple (merged, old_safe_a, old_safe_b)
-    tuple<bool,int,int> unite(int a, int b){
-        a = find(a); b = find(b);
-        if (a==b) return {false, 0, 0};
-        if (sz[a] < sz[b]) swap(a,b);
-        p[b] = a;
-        sz[a] += sz[b];
+    tuple<bool, int, int> union_set(int a, int b) {
+        a = find_set(a);
+        b = find_set(b);
+        if (a == b) return {false, 0, 0};
+        
         int olda = safe_count[a], oldb = safe_count[b];
+        
+        if (rank[a] < rank[b])
+            swap(a, b);
+        parent[b] = a;
+        if (rank[a] == rank[b])
+            rank[a]++;
+        
         safe_count[a] += safe_count[b];
         return {true, olda, oldb};
+    }
+
+    // Reset the DSU
+    void reset() {
+        rank.assign(n, 0);
+        safe_count.assign(n, 0);
+        for(int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
     }
 };
 
@@ -55,7 +95,7 @@ int main(){
     edges.reserve(M);
     for (int i=0;i<M;++i){
         int u,v; ll w; cin >> u >> v >> w;
-        edges.push_back({u,v,w});
+        edges.push_back({u, v, w});
     }
 
     // Count safe nodes
@@ -72,7 +112,7 @@ int main(){
     vector<tuple<ll,int,int>> safe_only;
     for (auto &e: edges){
         if (!risky[e.u] && !risky[e.v]){
-            safe_only.emplace_back(e.w, e.u, e.v);
+            safe_only.emplace_back(e.weight, e.u, e.v);
         }
     }
     sort(safe_only.begin(), safe_only.end(), [](auto &a, auto &b){
@@ -86,7 +126,7 @@ int main(){
     ll totalA = 0;
     for (auto &t: safe_only){
         ll w; int u,v; tie(w,u,v) = t;
-        auto [merged, sra, srb] = dsuA.unite(u,v);
+        auto [merged, sra, srb] = dsuA.union_set(u,v);
         if (!merged) continue;
         // both endpoints safe => sra>0 or srb>0, and merging two safe components reduces safe_comp if both had safe nodes
         if (sra>0 && srb>0) safe_comp--;
@@ -106,8 +146,8 @@ int main(){
     eff.reserve(M);
     for (auto &e: edges){
         int cntRisk = (risky[e.u]?1:0) + (risky[e.v]?1:0);
-        ll effw = e.w + P * (ll)cntRisk;
-        eff.push_back({effw, e.u, e.v, e.w});
+        ll effw = e.weight + P * (ll)cntRisk;
+        eff.push_back({effw, e.u, e.v, e.weight});
     }
     sort(eff.begin(), eff.end(), [](const EffEdge &a, const EffEdge &b){
         if (a.eff != b.eff) return a.eff < b.eff;
@@ -121,7 +161,7 @@ int main(){
     vector<EffEdge> chosen_all; chosen_all.reserve(N-1);
     ll total_all = 0;
     for (auto &ee: eff){
-        auto [merged, sra, srb] = dsuB.unite(ee.u, ee.v);
+        auto [merged, sra, srb] = dsuB.union_set(ee.u, ee.v);
         if (!merged) continue;
         if (sra>0 && srb>0) safe_compB--;
         chosen_all.push_back(ee);
@@ -146,7 +186,7 @@ int main(){
     vector<pair<int,int>> final_edges;
     ll final_total = 0;
     for (auto &ee: chosen_all){
-        auto [merged, sra, srb] = dsuC.unite(ee.u, ee.v);
+        auto [merged, sra, srb] = dsuC.union_set(ee.u, ee.v);
         if (!merged) continue;
         if (sra>0 && srb>0) safe_compC--;
         final_edges.emplace_back(ee.u, ee.v);

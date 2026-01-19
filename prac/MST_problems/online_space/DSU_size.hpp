@@ -60,6 +60,8 @@ namespace DSU{
     }
 
     void init(int n){
+        set.clear();
+        size.clear();
         set.resize(n);
         size.resize(n);
         components=n ;
