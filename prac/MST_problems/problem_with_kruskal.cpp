@@ -36,7 +36,4 @@ int main(){
         cout << e.u <<" "<<e.v<<endl ;
     }
     
-
-
-
 }
