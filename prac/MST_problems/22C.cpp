@@ -18,11 +18,7 @@ struct Edge {
     ll weight;
 };
 
-struct EffEdge {
-    ll eff;
-    int u, v;
-    ll orig;
-};
+
 
 class DSU {
 private:
@@ -79,6 +75,10 @@ public:
     }
 };
 
+bool comp(Edge a, Edge b){
+   return a.weight < b.weight;
+}
+
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -86,46 +86,52 @@ int main(){
     ll P;
     cin >> N >> M >> P;
     int K; cin >> K;
-    vector<char> risky(N, 0);
-    for (int i=0;i<K;++i){
+    vector<int> risky(N, 0);
+    for (int i=0 ; i<K; ++i){
         int r; cin >> r;
         risky[r] = 1;
     }
+
     vector<Edge> edges;
     edges.reserve(M);
-    for (int i=0;i<M;++i){
+
+    for (int i=0 ;i<M ;++i){
         int u,v; ll w; cin >> u >> v >> w;
         edges.push_back({u, v, w});
     }
 
     // Count safe nodes
     vector<int> safe_nodes;
-    for (int i=0;i<N;++i) if (!risky[i]) safe_nodes.push_back(i);
+    for (int i=0; i<N; ++i) 
+        if (!risky[i]) safe_nodes.push_back(i);
+    
     if (safe_nodes.empty()){
         // No safe cities: trivial
         cout << 0 << "\n" << 0 << "\n";
         return 0;
     }
-    int safe_components_init = (int)safe_nodes.size();
+
+    int safe_components_init = safe_nodes.size();
 
     // Phase A: safe-only edges
-    vector<tuple<ll,int,int>> safe_only;
+    vector<Edge> safe_only;
     for (auto &e: edges){
         if (!risky[e.u] && !risky[e.v]){
-            safe_only.emplace_back(e.weight, e.u, e.v);
+            safe_only.emplace_back(e);
         }
     }
-    sort(safe_only.begin(), safe_only.end(), [](auto &a, auto &b){
-        return get<0>(a) < get<0>(b);
-    });
+    sort(safe_only.begin(), safe_only.end(), comp);
 
     DSU dsuA(N);
-    for (int i=0;i<N;++i) dsuA.safe_count[i] = (!risky[i]) ? 1 : 0;
+
+    for (int i=0;i<N;++i) 
+        dsuA.safe_count[i] = (!risky[i]) ? 1 : 0;
+
     int safe_comp = safe_components_init;
-    vector<pair<int,int>> chosenA;
+    vector<pii> chosenA;
     ll totalA = 0;
     for (auto &t: safe_only){
-        ll w; int u,v; tie(w,u,v) = t;
+        ll w=t.weight; int u=t.u,v=t.v; 
         auto [merged, sra, srb] = dsuA.union_set(u,v);
         if (!merged) continue;
         // both endpoints safe => sra>0 or srb>0, and merging two safe components reduces safe_comp if both had safe nodes
@@ -142,30 +148,32 @@ int main(){
     }
 
     // Phase B: full graph with effective weights
-    vector<EffEdge> eff;
+    vector<Edge> eff;
     eff.reserve(M);
+
     for (auto &e: edges){
         int cntRisk = (risky[e.u]?1:0) + (risky[e.v]?1:0);
         ll effw = e.weight + P * (ll)cntRisk;
-        eff.push_back({effw, e.u, e.v, e.weight});
+        eff.push_back({ e.u, e.v, effw});
     }
-    sort(eff.begin(), eff.end(), [](const EffEdge &a, const EffEdge &b){
-        if (a.eff != b.eff) return a.eff < b.eff;
-        if (a.u != b.u) return a.u < b.u;
-        return a.v < b.v;
-    });
+
+    sort(eff.begin(), eff.end(), comp);
 
     DSU dsuB(N);
-    for (int i=0;i<N;++i) dsuB.safe_count[i] = (!risky[i]) ? 1 : 0;
+    for (int i=0;i<N;++i) 
+        dsuB.safe_count[i] = (!risky[i]) ? 1 : 0;
+
     int safe_compB = safe_components_init;
-    vector<EffEdge> chosen_all; chosen_all.reserve(N-1);
+    vector<Edge> chosen_all; chosen_all.reserve(N-1);
+
     ll total_all = 0;
+
     for (auto &ee: eff){
         auto [merged, sra, srb] = dsuB.union_set(ee.u, ee.v);
         if (!merged) continue;
         if (sra>0 && srb>0) safe_compB--;
         chosen_all.push_back(ee);
-        total_all += ee.eff;
+        total_all += ee.weight;
         if (safe_compB == 1) break;
     }
     if (safe_compB != 1){
@@ -175,14 +183,14 @@ int main(){
 
     // Prune chosen_all to minimal subset that still connects all safe nodes.
     // Run Kruskal again but only on chosen_all edges (they are <= N-1), stop when safe nodes connected.
-    sort(chosen_all.begin(), chosen_all.end(), [](const EffEdge &a, const EffEdge &b){
-        if (a.eff != b.eff) return a.eff < b.eff;
-        if (a.u != b.u) return a.u < b.u;
-        return a.v < b.v;
-    });
+    sort(chosen_all.begin(), chosen_all.end(), comp);
+
     DSU dsuC(N);
-    for (int i=0;i<N;++i) dsuC.safe_count[i] = (!risky[i]) ? 1 : 0;
+    for (int i=0;i<N;++i) 
+        dsuC.safe_count[i] = (!risky[i]) ? 1 : 0;
+
     int safe_compC = safe_components_init;
+
     vector<pair<int,int>> final_edges;
     ll final_total = 0;
     for (auto &ee: chosen_all){
@@ -190,7 +198,7 @@ int main(){
         if (!merged) continue;
         if (sra>0 && srb>0) safe_compC--;
         final_edges.emplace_back(ee.u, ee.v);
-        final_total += ee.eff;
+        final_total += ee.weight;
         if (safe_compC == 1) break;
     }
 
