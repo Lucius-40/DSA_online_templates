@@ -26,7 +26,7 @@ class CustomProbing1 {
     int search_count = 0;
     std::vector<Entry> table;
 
-    // User-defined constants
+    
     const int C1 = 5;  
     const int C2 = 3;
 

@@ -1,5 +1,5 @@
 @echo off
-g++ -O2 -std=c++17 online21B.cpp hash_functions/metroHash/metrohash64.cpp hash_functions/"MurMur hash"/MurmurHash3.cpp -o test.exe
+g++ -O2 -std=c++17 onlineC21.cpp hash_functions/metroHash/metrohash64.cpp hash_functions/"MurMur hash"/MurmurHash3.cpp -o test.exe
 if %errorlevel% neq 0 (
     echo Compilation failed!
     pause
