@@ -119,10 +119,10 @@ class HashTable_Chaining{
     }
 
     void display() {
-        cout << "\nHash Table:\n" << endl;
-        cout << "Table Size: " << size << " | Elements: " << elements << endl;
-        cout << "Load Factor: " << ((double)elements / size) << endl;
-        cout << "\n" << endl;
+        // cout << "\nHash Table:\n" << endl;
+        // cout << "Table Size: " << size << " | Elements: " << elements << endl;
+        // cout << "Load Factor: " << ((double)elements / size) << endl;
+        // cout << "\n" << endl;
         
         int bucket_num = 0;
         for (int i = 0; i < size; i++) {
