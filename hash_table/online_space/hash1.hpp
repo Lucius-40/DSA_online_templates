@@ -1,11 +1,10 @@
 #pragma once
 #include<bits/stdc++.h>
 #include "utils.hpp"
-
 using namespace std ;
 // run the batch file to execute
 
-namespace Hash2Impl {
+namespace Hash1Impl {
 
 template<class K , class V>
 class HashTable_Chaining{
@@ -19,7 +18,7 @@ class HashTable_Chaining{
     int search_count = 0 ;
     vector<vector<pair<K,V>>> table ;
     int index(const K& key){
-        return Hash2(key)%size ;// metro hash
+        return Hash1(key)%size ;// metro hash
     }
 
     void rehash(bool larger) {
@@ -120,10 +119,10 @@ class HashTable_Chaining{
     }
 
     void display() {
-        cout << "\nHash Table:\n" << endl;
-        cout << "Table Size: " << size << " | Elements: " << elements << endl;
-        cout << "Load Factor: " << ((double)elements / size) << endl;
-        cout << "\n" << endl;
+        // cout << "\nHash Table:\n" << endl;
+        // cout << "Table Size: " << size << " | Elements: " << elements << endl;
+        // cout << "Load Factor: " << ((double)elements / size) << endl;
+        // cout << "\n" << endl;
         
         int bucket_num = 0;
         for (int i = 0; i < size; i++) {
@@ -169,6 +168,8 @@ class HashTable_DoubleHashing {
     int search_count = 0;
     vector<Entry> table;
     int prev(int n) const {
+        if(n==13)
+            return 11 ;
         if(n <= 3) 
             return 3 ;
         while (n > 2 && !isPrime(n)) 
@@ -180,7 +181,7 @@ class HashTable_DoubleHashing {
     }
 
     int primaryHash(const K& key) const {
-        return Hash2(key) % size; //  Metrohash
+        return Hash1(key) % size; //  Metrohash
     }
 
     // int auxHash(const K& key) const {
@@ -191,7 +192,7 @@ class HashTable_DoubleHashing {
     // }
     int auxHash(const K& key) const {
         int R = prev(size);
-        uint64_t h = Hash1(key);
+        uint64_t h = Hash2(key);
         h ^= (h >> 33);
         h *= 0xff51afd7ed558ccdULL;
         h ^= (h >> 33);
@@ -215,12 +216,13 @@ class HashTable_DoubleHashing {
         last_resize = elements;
 
         for (int i = 0; i < prev_size; i++) {
+            
             if (table[i].occupied) {
                 const K& key = table[i].key;
                 const V& value = table[i].value;
                 for (int j = 0; j < newSize; j++) {
                     int idx = probeIndex(key, j);  
-                    if(j > 0) total_collisions++ ;
+                    if(j > 0)total_collisions++ ;
                     if (!newTable[idx].occupied) {
                         newTable[idx].key = key;
                         newTable[idx].value = value;
@@ -247,13 +249,13 @@ public:
     }
 
     void insert(const K& key, const V& value) {
-        //bool flag = false ;
+        //bool flag =  false ;
         for (int i = 0; i < size; i++) {
             int idx = probeIndex(key, i);
             if (table[idx].occupied && table[idx].key == key) {
                 return; //dup
             }
-            if (i > 0) total_collisions++ ;
+            if (i > 0) total_collisions++;
             if (!table[idx].occupied || table[idx].deleted) {
                 table[idx].key = key;
                 table[idx].value = value;
@@ -264,7 +266,7 @@ public:
                 break;
             }
         }
-        //if(flag) total_collisions ++ ;
+        //if(flag)total_collisions++ ;
         double load_factor = (double)elements / size;
         if (load_factor > LOAD_FACTOR_MAX && track_insert >= (last_resize / 2)) {
             rehash(true);
@@ -277,9 +279,9 @@ public:
             if (!table[idx].occupied && !table[idx].deleted) {
                 return false; // empty slot, stop
             }
-            if (table[idx].occupied && table[idx].key == key) {                
+            if (table[idx].occupied && table[idx].key == key) {
                 total_hits += (i + 1);
-                search_count++;                
+                search_count++;
                 outValue = table[idx].value;
                 return true;
             }
@@ -341,8 +343,6 @@ public:
 
 template <typename K, typename V>
 class HashTable_CustomProbing {
-
-    
     struct Entry {
         K key;
         V value;
@@ -376,15 +376,22 @@ class HashTable_CustomProbing {
     }
 
     int primaryHash(const K& key) const {
-        return Hash2(key) % size; // e.g., MetroHash
+        return Hash1(key) % size; // e.g., MetroHash
     }
 
+    // int auxHash(const K& key) const {
+    //     int R = prev(size);
+        
+    //     int hash_value = Hash1(key)%R;
+    //     return R - (hash_value % R);
+    // }
     int auxHash(const K& key) const {
         int R = prev(size);
-        std::hash<K> hasher;
-        size_t hash_value = hasher(key);
-        return R - (hash_value % R);
+        uint64_t h = Hash1(key);
+        h = (h * 31 + 17) * 2654435761ULL;  
+        return max(1, (int)(h % R));
     }
+    
 
     // Custom probing sequence
     int probeIndex(const K& key, int i) const {
@@ -404,6 +411,7 @@ class HashTable_CustomProbing {
         last_resize = elements;
 
         for (int i = 0; i < prev_size; i++) {
+            
             if (table[i].occupied) {
                 const K& key = table[i].key;
                 const V& value = table[i].value;
@@ -435,14 +443,38 @@ public:
         table.resize(size);
     }
 
+    // void insert(const K& key, const V& value) {
+    //     //bool flag = false ;
+    //     for (int i = 0; i < size; i++) {
+    //         int idx = probeIndex(key, i);
+    //         if (table[idx].occupied && table[idx].key == key) {
+    //             return; // duplicate
+    //         }
+    //         if (i > 0) total_collisions++;
+    //         if (!table[idx].occupied || table[idx].deleted) {
+    //             table[idx].key = key;
+    //             table[idx].value = value;
+    //             table[idx].occupied = true;
+    //             table[idx].deleted = false;
+    //             elements++;
+    //             track_insert++;
+    //             break;
+    //         }
+    //     }
+    //     //if(flag) total_collisions ++ ;
+    //     double load_factor = (double)elements / size;
+    //     if (load_factor > LOAD_FACTOR_MAX && track_insert >= (last_resize / 2)) {
+    //         rehash(true);
+    //     }
+    // }
     void insert(const K& key, const V& value) {
         //bool flag = false ;
         for (int i = 0; i < size; i++) {
             int idx = probeIndex(key, i);
             if (table[idx].occupied && table[idx].key == key) {
-                return; // duplicate
+                return; //dup
             }
-            if (i > 0) total_collisions++;
+            if (i > 0) total_collisions++ ;
             if (!table[idx].occupied || table[idx].deleted) {
                 table[idx].key = key;
                 table[idx].value = value;
@@ -453,7 +485,7 @@ public:
                 break;
             }
         }
-        //if(flag)total_collisions ++ ;
+        //if(flag) total_collisions ++ ;
         double load_factor = (double)elements / size;
         if (load_factor > LOAD_FACTOR_MAX && track_insert >= (last_resize / 2)) {
             rehash(true);
@@ -519,7 +551,7 @@ public:
                 cout << "Slot " << i << ": (" << table[i].key << ", " << table[i].value << ")\n";
             }
         }
-        cout <<endl;
+        cout << endl;
     }
 
     int getCollisions() const { return total_collisions; }
@@ -527,4 +559,4 @@ public:
     void resetStats() { total_collisions = 0; total_hits = 0; search_count = 0; }
 };
 
-} // namespace Hash2Impl
+} // namespace Hash1Impl
